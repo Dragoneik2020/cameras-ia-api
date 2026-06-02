@@ -1,0 +1,36 @@
+services:
+  api:
+    container_name: cameras-ia-api
+    restart: unless-stopped
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://cameras:cameras123@db:5432/cameras_ia
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-https://cam.rincon-z.com}
+      - SERVER_IP=${SERVER_IP:-38.7.199.172}
+    depends_on:
+      - db
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/cameras-ia:/var/lib/cameras-ia
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=cameras_ia
+      - POSTGRES_USER=cameras
+      - POSTGRES_PASSWORD=cameras123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
